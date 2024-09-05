@@ -21,7 +21,7 @@ model = model.train().to('cuda')
 FS, n_in, f0 = 16000, 1024, 10
 norm = lambda s : (s-np.mean(s))/max(1e-8, np.std(s))
 
-if not os.path.isfile(f'crepe_ft/train_set_{suffix}.pkl'):
+if not os.path.isfile(f'train_set_{suffix}.pkl'):
     df = []
     for specie in ([args.only] if args.only else set(species)-{args.omit} if args.omit else species):
         wavpath, fs, nfft, downsample, step = species[specie].values()
@@ -44,9 +44,9 @@ if not os.path.isfile(f'crepe_ft/train_set_{suffix}.pkl'):
     df.drop(df[(( df.label_Hz != 0 )&( df.label_Hz < 32.7 )&( df.label_Hz > 1975.5 ))].index, inplace=True)
     df.reset_index(drop=True, inplace=True)
     df['specie'] = df.fn.str.split('/').str[0]
-    df.to_pickle(f'crepe_ft/train_set_{suffix}.pkl')
+    df.to_pickle(f'crepe_weights/train_set_{suffix}.pkl')
 else:
-    df = pd.read_pickle(f'crepe_ft/train_set_{suffix}.pkl')
+    df = pd.read_pickle(f'crepe_weights/train_set_{suffix}.pkl')
 
 weights = torch.ones(len(df))
 for s, grp in df.groupby('specie'):
@@ -87,7 +87,7 @@ for epoch in range(100):
             minloss_iter = n_iter
         if n_iter > minloss_iter + 32 * 500:
             print('early stop')
-            torch.save(model.state_dict(), f'crepe_ft/model_{suffix}.pth')
+            torch.save(model.state_dict(), f'crepe_weights/model_{suffix}.pth')
             exit()
         n_iter += 1
-    torch.save(model.state_dict(), f'crepe_ft/model_{suffix}.pth')
+    torch.save(model.state_dict(), f'crepe_weights/model_{suffix}.pth')

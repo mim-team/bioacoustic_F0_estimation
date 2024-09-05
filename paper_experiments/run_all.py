@@ -48,12 +48,12 @@ for specie in species if args.specie =='all' else args.specie.split(' '):
     dt = round(nfft * step / FS * downsample, 3) # winsize / 8
     # Load species specific pre-trained models
     tcrepe_ftoth_model, tcrepe_ftsp_model = None, None
-    if os.path.isfile(f'crepe_ft/model_only-{args.split}_{specie}.pth'):
+    if os.path.isfile(f'crepe_weights/model_only-{args.split}_{specie}.pth'):
         tcrepe_ftsp_model = torchcrepe.Crepe('full').eval().to(device)
-        tcrepe_ftsp_model.load_state_dict(torch.load(f'crepe_ft/model_only-{args.split}_{specie}.pth', map_location=device))
-    if os.path.isfile(f'crepe_ft/model_omit_{specie}.pth'):
+        tcrepe_ftsp_model.load_state_dict(torch.load(f'crepe_weights/model_only-{args.split}_{specie}.pth', map_location=device))
+    if os.path.isfile(f'crepe_weights/model_omit_{specie}.pth'):
         tcrepe_ftoth_model = torchcrepe.Crepe('full').eval().to(device)
-        tcrepe_ftoth_model.load_state_dict(torch.load(f'crepe_ft/model_omit_{specie}.pth', map_location=device))
+        tcrepe_ftoth_model.load_state_dict(torch.load(f'crepe_weights/model_omit_{specie}.pth', map_location=device))
     # initialise the file list to iterate on
     fns = glob(wavpath)
     if type(args.split) == int:
