@@ -5,7 +5,7 @@ For a detailled descriptions of the study corresponding to this repository, see 
 If you use this repository, please cite: (upcoming).
 
 ## Use a crepe model pretrained on animal signals to analyse your own signals
-Install the packages necessary to run a crepe model using `pip install -r predict_requirements.txt`
+Install the packages necessary to run a crepe model using `pip install -r requirements.txt`
 
 Use the `predict.py` script to run a pretrained crepe model to estimate fundamental frequency values for your own sounds.
 ```
