@@ -1,7 +1,0 @@
-librosa==0.10.1
-matplotlib==3.9.2
-numpy==1.23.5
-pandas==1.5.2
-torch==1.13.1+cu117
-torchcrepe==0.0.22
-tqdm==4.64.1
