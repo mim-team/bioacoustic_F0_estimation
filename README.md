@@ -24,3 +24,6 @@ optional arguments:
                         Decoder used to postprocess predictions
   --print PRINT         Print spectrograms with overlaid F0 predictions to assess their quality
 ```
+
+## Reproduce paper experiments
+Go to the `paper_experiments` folder
