@@ -5,7 +5,7 @@ import pandas as pd, numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('indir', type=str, help="Directory with sound files to process")
-parser.add_argument('--model_path', type=str, help="Path of model weights", default='crepe_ft/model_all.pth')
+parser.add_argument('--model_path', type=str, help="Path of model weights", default='model_all.pth')
 parser.add_argument('--compress', type=float, help="Compression factor used to shift frequencies into CREPE's range [32Hz; 2kHz]. \
     Frequencies are divided by the given factor by artificially changing the sampling rate (slowing down / speeding up the signal).", default=1)
 parser.add_argument('--step', type=float, help="Step used between each prediction (in seconds)", default=256 / torchcrepe.SAMPLE_RATE)
