@@ -21,10 +21,10 @@ species_list = [
     'monk_parakeets', 'lions', 'orangutans', 'long-billed_hermits', # 4 good harmonicity only
     'hummingbirds', 'disk-winged_bats', 'Reunion_grey_white_eyes', 'dolphins', 'La_Palma_chaffinches'] # 5 neither
 
-algos = ['basic', 'pyin', 'pesto', 'praat', 'pesto_ft', 'tcrepe_ftoth', 'tcrepe_ftsp'] #, 'tcrepe_ftspV']
-algo_names = ['basic', 'pyin', 'pesto-music', 'praat', 'pesto-bio', 'crepe-heterosp.', 'crepe-consp.'] #, 'crepe-target\nviterbi']
-#metrics = ['Pitch acc', 'Chroma acc']
-metrics = ['Specificity', 'Recall', 'Vocalisation recall']
+algos = ['basic', 'pyin', 'praat', 'pesto', 'pesto_ft', 'tcrepe', 'tcrepe_ftoth', 'tcrepe_ftsp'] #, 'tcrepe_ftspV']
+algo_names = ['basic', 'pyin',  'praat', 'pesto-music', 'pesto-bio', 'crepe-music', 'crepe-heterosp.', 'crepe-consp.'] #, 'crepe-target\nviterbi']
+metrics = ['Pitch acc', 'Chroma acc']
+# metrics = ['Specificity', 'Recall', 'Vocalisation recall']
 
 fig, ax = plt.subplots(nrows=len(metrics), ncols=1, figsize=(9, 6), sharex=True, sharey=True)
 ax[0].set_ylim(0, 1.05)
@@ -37,14 +37,18 @@ for i, metric in enumerate(metrics):
     m_ax.set_ylabel(metric.replace('acc', 'accuracy'), fontsize='medium')
 
     ok = pd.DataFrame()
-    for j, (specie, marker) in enumerate(zip(species_list, markers)):
+    for specie in species_list:
         df = pd.read_csv(f'scores/{specie}_scores.csv', index_col=0)
         df['Specificity'] = 1 - df['False alarm']
         df.rename(columns={'Voc. recall':'Vocalisation recall'}, inplace=True)
         ok.loc[specie, df.index] = df[metric]
 
-        # icon = get_marker_from_svg(filepath=f'svg/{specie}.svg')
-        # icon.vertices *= -1
+    boxes = m_ax.boxplot(ok[algos].to_numpy(), positions=np.arange(len(algos)), showfliers=False, patch_artist=False, whiskerprops={'color':'#0f0f0f80'})
+    for b in boxes['boxes']:
+        b.set_alpha(0.3)
+        # b.set_facecolor('grey') 
+
+    for j, (specie, marker) in enumerate(zip(species_list, markers)):
         tt = m_ax.plot(np.arange(len(algos))-.3+j*0.6/len(species_list), ok.loc[specie, algos],\
             marker=marker[0], color=marker[2], markersize=7, fillstyle=marker[1], label=specie.replace('_',' '), linestyle='none')
         algo_legend.append(tt[0])
@@ -66,4 +70,5 @@ leg = m_ax.legend(algo_legend[9:], species_list[9:], ncols=2, title='non-salient
 m_ax.add_artist(leg)
 # ax.legend(loc='lower left', ncols=7, bbox_to_anchor=(0, 1.1), fontsize='x-small')
 
-plt.savefig(f'figures/scatter_scores_detec.pdf')
+# plt.show()
+plt.savefig(f'figures/scatter_scores.pdf')
