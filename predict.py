@@ -37,8 +37,8 @@ for ifile, filepath in enumerate(files):
         continue
 
     generator = torchcrepe.core.preprocess(torch.tensor(sig).unsqueeze(0), torchcrepe.SAMPLE_RATE, \
-        hop_length=int(args.step / args.compress * torchcrepe.SAMPLE_RATE), batch_size=batch_size, device=device)
-    size = int(1 + (len(sig) - 1024) // (args.step * torchcrepe.SAMPLE_RATE))
+        hop_length=int(args.step * args.compress * torchcrepe.SAMPLE_RATE), batch_size=batch_size, device=device)
+    size = int(1 + len(sig) // (args.step * args.compress * torchcrepe.SAMPLE_RATE)) // batch_size
     with torch.inference_mode():
         preds = torch.vstack([model(frames).cpu() for frames in tqdm.tqdm(generator, desc=f'{ifile}/{len(files)}: {filepath.split("/")[-1]}', total=size, leave=False)]).T.unsqueeze(0)
         f0 = (torchcrepe.core.postprocess(preds, decoder=decoder) * args.compress).squeeze()
