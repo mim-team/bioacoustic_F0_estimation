@@ -49,13 +49,16 @@ for ifile, filepath in enumerate(files):
     df.to_csv(filepath.rsplit('.',1)[0]+'_f0.csv', index=False)
     # Plot F0 predictions over spectrograms
     if args.print:
-        plt.figure(figsize=(max(6.4, 6.4*time[-1]/2), 4.8))
-        plt.specgram(sig, Fs=fs, NFFT=args.NFFT, noverlap=args.NFFT-args.NFFT//8)
         mask = confidence>args.threshold
-        plt.scatter(time[mask], f0[mask], c=confidence[mask], s=5)
-        plt.xlim(0, len(sig)/fs)
-        plt.ylim(0, f0[mask].max() * 1.5)
-        plt.colorbar()
-        plt.tight_layout()
-        plt.savefig(filepath.rsplit('.',1)[0]+'_f0.png')
-        plt.close()
+        if mask.any():
+            plt.figure(figsize=(max(6.4, 6.4*time[-1]/2), 4.8))
+            plt.specgram(sig, Fs=fs, NFFT=args.NFFT, noverlap=args.NFFT-args.NFFT//8)
+            plt.scatter(time[mask], f0[mask], c=confidence[mask], s=5)
+            plt.xlim(0, len(sig)/fs)
+            plt.ylim(0, f0[mask].max() * 1.5)
+            plt.colorbar()
+            plt.tight_layout()
+            plt.savefig(filepath.rsplit('.',1)[0]+'_f0.png')
+            plt.close()
+        else:
+            print(f'With the chosen confidence threshold {args.threshold}, no section was detected as voiced')
