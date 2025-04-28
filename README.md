@@ -43,7 +43,3 @@ optional arguments:
 
 ## Reproducing paper experiments
 Go to the `paper_experiments` folder
-
-
-## Reproduce paper experiments
-Go to the `paper_experiments` folder
