@@ -31,6 +31,8 @@ if os.path.isdir(args.input):
     files = [os.path.join(args.input, fn) for fn in os.listdir(args.input) if fn.split('.')[-1].upper() in soundfile._formats]
 elif os.path.isfile(args.input) and args.input.split('.')[-1].upper() in soundfile._formats:
     files = [args.input]
+else:
+    files = []
 
 if len(files) == 0:
     raise Exception(f"The given input argument {args.input} is either not a valid directory/file path, or it doesn't contain any sound file of the supported formats (please refer to pysoundfile documentation)")
