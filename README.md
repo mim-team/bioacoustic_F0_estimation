@@ -1,6 +1,7 @@
 # Bioacoustic F0 estimation
 
 *This repository provides a Python interface based on deep learning to analyse bioacoustic signals by detecting tonal sounds and estimating their fundamental frequency.*
+![test](https://github.com/user-attachments/assets/e8aebac2-9997-4d90-8178-01806001a58f)
 
 For a detailled descriptions of the study corresponding to this repository, see the journal publication: https://doi.org/10.1080/09524622.2025.2500380
 
@@ -18,11 +19,16 @@ git clone https://github.com/lamipaul/bioacoustic_F0_estimation
 cd bioacoustic_F0_estimation
 pip install -r requirements.txt`
 ```
+Note that these package requirements rely on CUDA being installed (for GPU computing and faster analysis). If you do not have CUDA installed, you can use freely available GPUs on google collab, or run F0 estimation locally on CPU (it will just be slower, please then use the `cpu_requirements.txt` file).
+
 - Use the `predict.py` script to run a pretrained crepe model to estimate fundamental frequency values for your own sounds.
 ```
 python predict.py my_sound_file.wav
 ```
+
 A `.csv` file will be saved with timestamped F0 values and their associated model confidence.
+
+
 
 Several options can also be specified when using this script:
 ```
