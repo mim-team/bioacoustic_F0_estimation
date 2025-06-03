@@ -53,7 +53,7 @@ for ifile, filepath in enumerate(files):
         preds = torch.vstack([model(frames).cpu() for frames in tqdm.tqdm(generator, desc=f'{ifile+1}/{len(files)}: {filepath.split("/")[-1]}', total=size, leave=False)]).T.unsqueeze(0)
         f0s = (torchcrepe.core.postprocess(preds, decoder=decoder) * args.compress).squeeze()
     confidence = preds.max(axis=1)[0].squeeze()
-    time = np.arange(0, len(sig)/fs + 1e-6, args.step)
+    time = np.arange(0, len(sig), int(args.step * args.compress * torchcrepe.SAMPLE_RATE)) / fs
     
     df = pd.DataFrame({'time':time, 'f0':f0s, 'confidence':confidence})
     # Vocalisation characterisation (harmonicity, salience, SHR)
@@ -74,16 +74,18 @@ for ifile, filepath in enumerate(files):
 
     df.to_csv(filepath.rsplit('.',1)[0]+'_f0.csv', index=False)
     # Plot F0 predictions over spectrograms
-    if not args.no_print:
+    if not args.no_print and len(sig)/fs < 60:
         mask = confidence > args.threshold
         try:
             if mask.any():
-                plt.figure(figsize=(max(6.4, 6.4*time[-1]/2), 4.8))
-                plt.specgram(sig, Fs=fs, NFFT=nfft, noverlap=nfft-nfft//8)
+                plt.figure(figsize=(6.4*time[-1]/3*args.compress, 4.8))
+                plt.specgram(sig, Fs=fs, NFFT=nfft, noverlap=nfft-nfft//8, cmap='Greys')
                 plt.scatter(time[mask], f0s[mask], c=confidence[mask], s=5)
                 plt.xlim(0, len(sig)/fs)
                 plt.ylim(0, f0s[mask].max() * 1.5)
-                plt.colorbar()
+                plt.colorbar(label="Confidence")
+                plt.xlabel('Time (sec)')
+                plt.ylabel('Frequency (Hz)')
                 plt.tight_layout()
                 plt.savefig(filepath.rsplit('.',1)[0]+'_f0.png')
                 plt.close()
