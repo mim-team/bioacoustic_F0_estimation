@@ -1,15 +1,16 @@
 # Bioacoustic F0 estimation
 
 *This repository provides a Python interface based on deep learning to analyse bioacoustic signals by detecting tonal sounds and estimating their fundamental frequency.*
-![test](https://github.com/user-attachments/assets/e8aebac2-9997-4d90-8178-01806001a58f)
+![test_wolf](https://github.com/user-attachments/assets/ac1d7c30-4a8e-44fc-8a3b-b57d8f46d7ce)
 
 For a detailled descriptions of the study corresponding to this repository, see the journal publication: https://doi.org/10.1080/09524622.2025.2500380
+(Author accepted manuscript full text is available [here](https://www.ricardmarxer.com/assets/f0-examples/Accepted_Manuscript_Best_Marxer_et_al_2025.pdf))
 
 The data that was used to train F0 estimation models and to run experiments is available on a dryad repository: https://doi.org/10.5061/dryad.prr4xgxw8
 
 If you use this repository, please cite the associated journal publication.
 
-## Use a model pretrained on vocalisations of 14 different taxa to analyse your own recordings
+## How to use a pretrained model to analyse your own recordings
 - Clone the repo locally
 ```
 git clone https://github.com/lamipaul/bioacoustic_F0_estimation
@@ -21,12 +22,12 @@ pip install -r requirements.txt`
 ```
 Note that these package requirements rely on CUDA being installed (for GPU computing and faster analysis). If you do not have CUDA installed, you can use freely available GPUs on google collab, or run F0 estimation locally on CPU (it will just be slower, please then use the `cpu_requirements.txt` file).
 
-- Use the `predict.py` script to run a pretrained crepe model to estimate fundamental frequency values for your own sounds.
+- Run the `predict.py` script to use a pretrained crepe model to estimate F0 values for your own sounds.
 ```
 python predict.py my_sound_file.wav
 ```
 
-A `.csv` file will be saved with timestamped F0 values and their associated model confidence.
+A `.csv` file will be saved with timestamped F0 values, their associated model confidence, along with F0-based features (salience, harmonicity, and sub-harmonic ratio).
 
 
 
