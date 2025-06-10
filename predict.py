@@ -79,8 +79,8 @@ for ifile, filepath in enumerate(files):
         try:
             if mask.any():
                 plt.figure(figsize=(6.4*time[-1]/3*args.compress, 4.8))
-                plt.specgram(sig, Fs=fs, NFFT=nfft, noverlap=nfft-nfft//8, cmap='Greys')
-                plt.scatter(time[mask], f0s[mask], c=confidence[mask], s=5)
+                plt.specgram(sig, Fs=fs, NFFT=nfft, noverlap=nfft-nfft//8, cmap='inferno', vmin=-150)
+                plt.scatter(time[mask], f0s[mask], c=confidence[mask], s=5, cmap='cool')
                 plt.xlim(0, len(sig)/fs)
                 plt.ylim(0, f0s[mask].max() * 1.5)
                 plt.colorbar(label="Confidence")
@@ -92,4 +92,4 @@ for ifile, filepath in enumerate(files):
             else:
                 print(f'With the chosen confidence threshold {args.threshold}, no section was detected as voiced')
         except:
-            print(f'Failed to create figure for {filepath}, but results are still saved in the .csv table')
+            print(f'Failed to create the spectrogram figure for {filepath}, but results are still saved in the .csv table')
