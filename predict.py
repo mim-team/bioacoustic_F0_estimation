@@ -1,14 +1,18 @@
 import matplotlib.pyplot as plt
+import warnings
 import argparse, os, tqdm
 import torchcrepe, torch, librosa, soundfile
 import pandas as pd, numpy as np
+from scipy import signal
+warnings.filterwarnings("ignore")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('input', type=str, help="Directory with sound files to process, or a single file to process")
+parser.add_argument('--high_pass', type=float, help="High pass cut-off frequency", default=None)
 parser.add_argument('--model_path', type=str, help="Path of model weights", default=os.path.join(os.path.dirname(__file__), 'model_all.pth'))
 parser.add_argument('--compress', type=float, help="Compression factor used to shift frequencies into CREPE's range [32Hz; 2kHz]. \
     Frequencies are divided by the given factor by artificially changing the sampling rate (slowing down / speeding up the signal).", default=1)
-parser.add_argument('--step', type=float, help="Step used between each prediction (in seconds)", default=256 / torchcrepe.SAMPLE_RATE)
+parser.add_argument('--step', type=float, help="Step used between each prediction (in seconds, default is 0.016)", default=256 / torchcrepe.SAMPLE_RATE)
 parser.add_argument('--decoder', choices=['argmax', 'weighted_argmax', 'viterbi'], help="Decoder used to postprocess predictions", default='weighted_argmax')
 parser.add_argument('--no_print', action='store_true', help="Skip printing spectrograms with overlaid F0 predictions to assess their quality")
 parser.add_argument('--no_characterisation', action='store_true', help="Skip the computation of vocalisation characteristics (harmonicity, salience, and SHR)")
@@ -26,6 +30,7 @@ FS, nfft = int(torchcrepe.SAMPLE_RATE * args.compress), args.NFFT
 Hz2bin = lambda f: np.floor(f / FS * nfft).astype(int)
 hann = np.hanning(nfft)
 get_spectrum = lambda x : np.abs(np.fft.rfft(hann * x))
+high_pass = signal.butter(5, 2*args.high_pass/FS, 'hp', output='sos') if args.high_pass else None
 
 if os.path.isdir(args.input):
     files = [os.path.join(args.input, fn) for fn in os.listdir(args.input) if fn.split('.')[-1].upper() in soundfile._formats]
@@ -45,6 +50,8 @@ for ifile, filepath in enumerate(files):
     except:
         print(f'Failed to load {filepath}')
         continue
+    if args.high_pass:
+        sig = signal.sosfilt(high_pass, sig).astype("float32")
 
     generator = torchcrepe.core.preprocess(torch.tensor(sig).unsqueeze(0), torchcrepe.SAMPLE_RATE, \
         hop_length=int(args.step * args.compress * torchcrepe.SAMPLE_RATE), batch_size=batch_size, device=device)
@@ -53,7 +60,7 @@ for ifile, filepath in enumerate(files):
         preds = torch.vstack([model(frames).cpu() for frames in tqdm.tqdm(generator, desc=f'{ifile+1}/{len(files)}: {filepath.split("/")[-1]}', total=size, leave=False)]).T.unsqueeze(0)
         f0s = (torchcrepe.core.postprocess(preds, decoder=decoder) * args.compress).squeeze()
     confidence = preds.max(axis=1)[0].squeeze()
-    time = np.arange(0, len(sig), int(args.step * args.compress * torchcrepe.SAMPLE_RATE)) / fs
+    time = np.arange(0, len(sig)+1, int(args.step * args.compress * torchcrepe.SAMPLE_RATE)) / fs
     
     df = pd.DataFrame({'time':time, 'f0':f0s, 'confidence':confidence})
     # Vocalisation characterisation (harmonicity, salience, SHR)
@@ -78,7 +85,7 @@ for ifile, filepath in enumerate(files):
         mask = confidence > args.threshold
         try:
             if mask.any():
-                plt.figure(figsize=(6.4*time[-1]/3*args.compress, 4.8))
+                plt.figure(figsize=(max(4.8, 6.4*time[-1]/3*args.compress), 4.8))
                 plt.specgram(sig, Fs=fs, NFFT=nfft, noverlap=nfft-nfft//8, cmap='inferno', vmin=-150)
                 plt.scatter(time[mask], f0s[mask], c=confidence[mask], s=5, cmap='cool')
                 plt.xlim(0, len(sig)/fs)
@@ -90,6 +97,6 @@ for ifile, filepath in enumerate(files):
                 plt.savefig(filepath.rsplit('.',1)[0]+'_f0.png')
                 plt.close()
             else:
-                print(f'With the chosen confidence threshold {args.threshold}, no section was detected as voiced')
+                print(f'With the chosen confidence threshold {args.threshold}, no section was detected as voiced for {filepath}')
         except:
             print(f'Failed to create the spectrogram figure for {filepath}, but results are still saved in the .csv table')
