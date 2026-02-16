@@ -23,7 +23,7 @@ args = parser.parse_args()
 # Initialisations
 device, batch_size = ('cuda', 64) if torch.cuda.is_available() else ('cpu', 1)
 model = torchcrepe.Crepe('full').eval().to(device)
-model.load_state_dict(torch.load(args.model_path, map_location=device, weights_only=True))
+model.load_state_dict(torch.load(args.model_path, map_location=device))
 decoder = torchcrepe.decode.__dict__[args.decoder]
 
 FS, nfft = int(torchcrepe.SAMPLE_RATE * args.compress), args.NFFT
