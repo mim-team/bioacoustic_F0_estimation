@@ -18,7 +18,7 @@ git clone https://github.com/lamipaul/bioacoustic_F0_estimation
 - Navigate inside the local repository and install dependencies
 ```
 cd bioacoustic_F0_estimation
-pip install -r requirements.txt`
+pip install -r requirements.txt
 ```
 Note that these package requirements rely on CUDA being installed (for GPU computing and faster analysis). If you do not have CUDA installed, you can use freely available GPUs on google collab, or run F0 estimation locally on CPU (it will just be slower, please then use the `cpu_requirements.txt` file).
 
