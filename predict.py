@@ -12,6 +12,7 @@ parser.add_argument('--high_pass', type=float, help="High pass cut-off frequency
 parser.add_argument('--model_path', type=str, help="Path of model weights", default=os.path.join(os.path.dirname(__file__), 'model_all.pth'))
 parser.add_argument('--compress', type=float, help="Compression factor used to shift frequencies into CREPE's range [32Hz; 2kHz]. \
     Frequencies are divided by the given factor by artificially changing the sampling rate (slowing down / speeding up the signal).", default=1)
+parser.add_argument('--use_channel', type=int, help='ID of the channel to use (starting from 0, if not specified, will use a mix of all)', default=None)
 parser.add_argument('--step', type=float, help="Step used between each prediction (in seconds, default is 0.016)", default=256 / torchcrepe.SAMPLE_RATE)
 parser.add_argument('--decoder', choices=['argmax', 'weighted_argmax', 'viterbi'], help="Decoder used to postprocess predictions", default='weighted_argmax')
 parser.add_argument('--no_print', action='store_true', help="Skip printing spectrograms with overlaid F0 predictions to assess their quality")
@@ -46,7 +47,9 @@ print(f'With the current compression factor of {args.compress}, the model\'s F0 
 
 for ifile, filepath in enumerate(files):
     try:
-        sig, fs = librosa.load(filepath, sr=FS)
+        sig, fs = librosa.load(filepath, sr=FS, mono=args.use_channel is None)
+        if sig.ndim > 1:
+            sig = sig[args.use_channel]
     except:
         print(f'Failed to load {filepath}')
         continue
@@ -61,7 +64,7 @@ for ifile, filepath in enumerate(files):
         f0s = (torchcrepe.core.postprocess(preds, decoder=decoder) * args.compress).squeeze()
     confidence = preds.max(axis=1)[0].squeeze()
     time = np.arange(0, len(sig)+1, int(args.step * args.compress * torchcrepe.SAMPLE_RATE)) / fs
-    
+
     df = pd.DataFrame({'time':time, 'f0':f0s, 'confidence':confidence})
     # Vocalisation characterisation (harmonicity, salience, SHR)
     if not args.no_characterisation:
@@ -81,7 +84,7 @@ for ifile, filepath in enumerate(files):
 
     df.to_csv(filepath.rsplit('.',1)[0]+'_f0.csv', index=False)
     # Plot F0 predictions over spectrograms
-    if not args.no_print and len(sig)/fs < 60:
+    if not args.no_print and len(sig)/fs <= 60:
         mask = confidence > args.threshold
         try:
             if mask.any():
